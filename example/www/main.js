@@ -1,6 +1,6 @@
 /*jslint browser, devel */
 /*global capacitorExports */
-const {registerPlugin} = capacitorExports;
+const { CapacitorHttp, registerPlugin} = capacitorExports;
 const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
 
 const started = Date.now();
@@ -76,6 +76,7 @@ function add_watcher(background) {
                 }
                 return log_error(error, watcher_colours[id]);
             }
+            ping({ location });
             return log_location(location, id);
         }
     ).then(function retain_the_watcher_id(the_id) {
@@ -153,5 +154,21 @@ function guess(timeout) {
                 location.time
             )
         );
+    });
+}
+
+async function ping(additionalParams) {
+  const options = {
+    url: "http://10.1.10.164:8083",
+    headers: { "content-type": "application/json" },
+    data: {
+      app: "Example",
+      ...additionalParams
+    }
+  };
+
+  await CapacitorHttp.post(options)
+    .then(async res => {
+      console.log("Echo response: ", res);
     });
 }
