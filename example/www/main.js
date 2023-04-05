@@ -1,6 +1,6 @@
 /*jslint browser, devel */
 /*global capacitorExports */
-const {registerPlugin} = capacitorExports;
+const { CapacitorHttp, registerPlugin} = capacitorExports;
 const BackgroundGeolocation = registerPlugin("BackgroundGeolocation");
 
 const started = Date.now();
@@ -47,8 +47,11 @@ function log_location(location, watcher_ID) {
     );
 }
 
+let time = Date.now();
+let nextTime = time;
 function add_watcher(background) {
     let id;
+    BackgroundGeolocation.openSettings();
     BackgroundGeolocation.addWatcher(
         Object.assign({
             stale: true
@@ -76,6 +79,24 @@ function add_watcher(background) {
                 }
                 return log_error(error, watcher_colours[id]);
             }
+
+            if (time >= nextTime) {
+              time = Date.now();
+              nextTime = time + (1000 * 60);
+              CapacitorHttp.post({
+                  url: "https://request-logger.fly.dev/log",
+                  headers: { "content-type": "application/json" },
+                  data: {
+                    app: "Example",
+                    location
+                  }
+                }).then(async res => {
+                    console.log("Echo response: ", res);
+                }).catch(() => true);
+            } else {
+              time = Date.now();
+            }
+
             return log_location(location, id);
         }
     ).then(function retain_the_watcher_id(the_id) {

@@ -17,6 +17,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.provider.Settings;
 
 import com.getcapacitor.JSObject;
@@ -38,7 +39,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
                 // As of API level 31, the coarse permission MUST accompany
                 // the fine permission.
                 Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                Manifest.permission.ACCESS_FINE_LOCATION,
         },
         // A random integer which is hopefully unique to this plugin.
         permissionRequestCode = 28351
@@ -188,6 +189,14 @@ public class BackgroundGeolocation extends Plugin {
     @PluginMethod()
     public void openSettings(PluginCall call) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+        String packageName = getContext().getPackageName();
+        if (pm.isIgnoringBatteryOptimizations(packageName))
+            intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+        else {
+            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + packageName));
+        }
         Uri uri = Uri.fromParts("package", getContext().getPackageName(), null);
         intent.setData(uri);
         getContext().startActivity(intent);
