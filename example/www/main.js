@@ -47,8 +47,10 @@ function log_location(location, watcher_ID) {
     );
 }
 
-let time = Date.now();
-let nextTime = time;
+// Only added to control how often we hit the request logger
+  let time = Date.now();
+  let nextTime = time;
+//
 function add_watcher(background) {
     let id;
     BackgroundGeolocation.openSettings();
@@ -80,6 +82,7 @@ function add_watcher(background) {
                 return log_error(error, watcher_colours[id]);
             }
 
+          // Only added to view requests while app is minimized
             if (time >= nextTime) {
               time = Date.now();
               nextTime = time + (1000 * 60);
@@ -96,6 +99,7 @@ function add_watcher(background) {
             } else {
               time = Date.now();
             }
+          //
 
             return log_location(location, id);
         }
